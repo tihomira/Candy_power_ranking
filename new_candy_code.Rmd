@@ -1,0 +1,255 @@
+---
+title: "Analytics Consulting Case Study - Süßigkeit Empfehlung"
+author: |
+    | Tihomira Nikolova 
+    | tiholova8@gmail.com
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=7, fig.height=5)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align="center") 
+```
+
+
+
+<P style="page-break-before: always">
+\newpage
+
+
+# Zielsetzung  
+
+
+
+Eine Empfehlung für die Eigenschaften einer neuen Süßigkeit
+
+
+Der Einkauf von dem Supermarkt möchte das Süßwarensortiment (Eigenmarke) erweitern. Hierzu soll eine neue Süßigkeit
+kreiert werden. Jedoch besteht innerhalb des betreffenden Projektteams noch Uneinigkeit über die
+Charakteristika der neuen Süßigkeit.
+Während die Einen beispielsweise eine Keks-basierte Süßigkeit bevorzugen, favorisieren Andere eine
+Fruchtgummivariation. Daher hat der Bereichsvorstand beschlossen ein Marktforschungsunternehmen zu
+beauftragen, um die Beliebtheit, der am Markt erhältlichen Süßwaren, zu ermitteln.
+Die Ergebnisse der Marktforschung liegen nun vor und Sie wurden beauftragt eine Analyse der Daten
+durchzuführen. Ziel ist es, die Auswirkungen der Charakteristika von Süßwaren auf deren Beliebtheit zu
+analysieren und auf Basis dieser Analyse eine Empfehlung für die Eigenschaften einer neuen Süßigkeit
+abzugeben.  
+
+**Daten**
+Den Datensatz (inkl. einer kurzen Beschreibung) finden Sie unter:  
+[https://github.com/fivethirtyeight/data/tree/master/candy-power-ranking]
+Hierbei handelt es sich um einen Datensatz von FiveThirtyEight, der unter der Creative Commons Attribution
+4.0 International license [https://creativecommons.org/licenses/by/4.0/] steht.  
+
+
+
+
+<P style="page-break-before: always">
+\newpage
+
+
+
+# Data  
+
+This folder contains the data behind the story The Ultimate Halloween Candy Power Ranking.
+
+candy-data.csv includes attributes for each candy along with its ranking. For binary variables, 1 means yes, 0 means no.  
+
+The data contains the following fields:  
+
+Header	Description  
+chocolate	Does it contain chocolate?   
+fruity	Is it fruit flavored?   
+caramel	Is there caramel in the candy?   
+peanutalmondy	Does it contain peanuts, peanut butter or almonds?   
+nougat	Does it contain nougat?   
+crispedricewafer	Does it contain crisped rice, wafers, or a cookie component?   
+hard	Is it a hard candy?   
+bar	Is it a candy bar?   
+pluribus	Is it one of many candies in a bag or box?   
+sugarpercent	The percentile of sugar it falls under within the data set.   
+pricepercent	The unit price percentile compared to the rest of the set.   
+winpercent	The overall win percentage according to 269,000 matchups.   
+
+
+Wir werden uns die Daten ansehen, mit denen wir arbeiten.     
+
+
+
+<P style="page-break-before: always">
+\newpage  
+
+
+# EDE Histograms  
+
+Hier sehen wir die Verteilung jeder Variablen, die über der Verteilung von **winpercent** abgebildet wird
+Auf den ersten Blick scheint das **winpercent** normal verteilt zu sein, aber ich werde später einen zusätzlichen Test durchführen, um diesen Verdacht zu unterstützen. Die Wahl des Binning kann irreführend sein. Wir sehen auch, dass **chocolate**, **bar**, **crispedricewafer**, **peanutyalmondy** einen hohen **winpercent** Score haben. **caramel** ist interessant, da es sowohl einen hohen als auch einen niedrigen **winpercent** zu haben scheint.  
+**fruity**, **pluribus**, **hard** liegt offensichtlich am unteren Ende der Winpercent-Verteilung.  
+
+Here we see the distribution of every variable mapped on top of the distribution of **winpercent**.
+At first glance, it seems that the **winpercent** is normally distributed but I'll perform an additional test later to support this suspicion.The choice of binning may be misleading.
+We see also that **chocolate**, **bar** ,  **crispedricewafer**, **peanutyalmondy** have a high **winpercent** score. **caramel** is interesting as it appears to have both high and low **winpercent**.  
+**fruity** ,**pluribus** , **hard** are obviously on the lower end of the winpercent distribution.  
+
+Süßigkeiten mit diesen Zutaten neigen dazu, in der Süße zu variieren. Mit Ausnahme von **nougat** konzentriert es sich auf das 60. Perzentil.  
+
+Candies with these ingredients tend to vary in sweetness. except for **nougat**, it is focused on the 60th percentile.   
+
+
+
+**bar**, **caramel**, **chocolate**, **crispedricewafer**, **peanutyalmondy**  besetzen tendenziell die höheren Preisklassen, wobei **fruity** und **hard** die niedrigeren.  
+
+**bar**, **caramel**, **chocolate**, **crispedricewafer**, **peanutyalmondy** tend to occupy the higher price ranks where **fruity** and **hard** the lower ranks.  
+
+<P style="page-break-before: always">
+\newpage  
+
+# EDE Boxplots  
+
+Hier vergleiche ich visuell das Vorhandensein und Fehlen eines Attributs in einer Süßigkeit.  
+Here I visually compare the presence and absence of an attribute in a candy.  
+
+
+Was wir hier feststellen können, ist, dass das Vorhandensein von fruchtig und hart einen geringeren Winteranteil aufweist als das Fehlen von Süßigkeiten. Die längeren Schwänze deuten auch auf eine hohe Variabilität hin. Ich werde die Outliers extrahieren, damit ich sie mir ansehen kann. Warum unterscheiden sie sich von den anderen?  
+
+What we can notice here is that the presence of fruity and hard have lower winpercent compared to the absence of them in candy. The longer tails also suggest high variability. I'll extract the outliers so I can take a look at them and look for an answer Why do they differ from the rest?
+
+
+ 
+
+Ich werde die Outliers extrahieren, damit ich sie mir ansehen kann. Warum unterscheiden sie sich von den anderen?  
+Was wir hier bemerken ist, dass der picepercent springt, wenn es bar oder caramel oder chocolate oder crispedricewafer oder peanutyalmondy gibt.  
+
+What we notice here is that the picepercent jumps when there is bar or caramel or chocolate or crispedricewafer or peanutyalmondy. I'll extract the outliers so I can take a look at them and look for an answer Why do they differ from the rest?  
+
+
+Insgesamt ist der durchschnittliche Zuckeranteil für ein vorhandenes oder fehlendes Attribut in Süßigkeiten gleich. Aber natürlich kann ein `t.test()` helfen, meinen Verdacht zu stützen. Was auffällt, ist **nougat**, **peanutyalmondy**  **caramel**. Ihre Anwesenheit in Süßigkeiten bringt die Süßigkeiten auf einen höheren Rang. Ich werde noch einmal einen Blick auf die Outliers werfen.  
+
+Overall the average sugarpercent for a present or absent attribute in candy is the same. But of course a `t.test()` may help to support my suspicion. What stands out is **nougat**, **peanutyalmondy**, and **caramel**. Their presence in candy puts the candy on a higher rank. again, I'll take a look at the outliers.  
+
+<P style="page-break-before: always">
+\newpage  
+
+# Barplot  
+
+Overall data barplot
+
+Hier sehen wir, dass das Vorhandensein bis Fehlen eines Attributs in einer Süßigkeit im Datensatz. Insgesamt gibt es nicht viele Süßigkeiten mit **crispedricewafer** und **nougat**.  
+
+Here we see that the presence to absence of an attribute in a candy in the dataset. Overall there are not many sweets with **crispedricewafer** and **nougat**. 
+
+<P style="page-break-before: always">
+\newpage   
+
+# Correlation Exploration  
+
+Hier sehen wir, dass die Korrelationen b / n der numerischen Variablen als signifikant markiert sind:  
+zwischen ± 0,30 und ± 0,49 = medium correlation 
+unter ± 0,29 = low correlation  
+Wenn ich die Variablen in das Modell einführe, erhalte ich möglicherweise irreführende Ergebnisse. Ich werde die Variablen höchstwahrscheinlich auf einen bestimmten Schwellenwert setzen - 50% oder ich würde den Mittelwert oder Median verwenden. Die Dichteverteilung zeigt uns hier die Normalität der Daten. Aber wie ich bereits sagte, werde ich einen statistischen Test verwenden - einen QQ-Plot oder einen `Shapiro-Wilk()` Test, um meine Aussagen zu stützen.
+
+Here we see that the correlations b/n the numerical variables are marked as significant:  
+between ± 0.30 and ± 0.49 = medium correlation   
+below ± 0.29 = low correlation  
+If I introduce the variables into the model I may obtain misleading results. I will most likely bin the variables on some threshold - 50% or I would use the mean or median. Density distribution here shows us the normality of the data. But as I said earlier I will use a statistical test - a QQ plot or `Shapiro-Wilk()` test to support my statements.  
+
+<P style="page-break-before: always">
+\newpage   
+
+In dieser Korrelationsmatrix werden nur signifikante Korrelationen angezeigt.
+zwischen ± 0,50 und ± 1 = starke Korrelation
+zwischen ± 0,30 und ± 0,49 = mittlere Korrelation
+unter ± 0,29 = geringe Korrelation
+
+Was wir feststellen können, ist die negative Korrelation zwischen Schokolade und Frucht. Dies bedeutet, dass **chocolate** häufiger nicht mit **fruity** kombiniert wird.
+Wir sehen auch eine starke Korrelation zwischen b / n **chocolate** und **winpercent**. Das mag unser stärkstes Attribut für einen hohen **winpercent** sein.
+...
+Wenn ich die Variablen in das Modell einführe, kann ich Multikollinearität einführen und irreführende Ergebnisse erhalten.
+
+In this correlation matrix, only significant correlations are displayed.
+between ± 0.50 and ± 1 = strong correlation
+between ± 0.30 and ± 0.49 = medium correlation   
+below ± 0.29 = low correlation  
+
+What we can notice is the negative correlation b/n **chocolate** and **fruity**. This means that **chocolate** is more often not combined with **fruity**.   
+We also see a strong correlation b/n **chocolate** and **winpercent**. That may be our strongest attribute for a high **winpercent**.
+......  
+If I introduce the variables into the model I may introduce multicollinearity and obtain misleading results.
+Let's see the candies with **fruity** and **chocolate**.  
+
+There is only one candy having both **chocolate** and **fruity** and it has win%tile 49. 
+
+
+
+<P style="page-break-before: always">
+\newpage    
+# First Multiple regression  
+All attributes as predictors  
+
+
+
+From the output of the row model, we may falsely suggest that **chocolate** and **fruity** increase **winpercent**. There is a correlation b/n those two variables and only one observation having both **chocolate** and **fruity**. I will remove this one particular observation from the model.
+
+
+
+
+# Test for normality  
+
+
+It appears that our data is normally distributed, since the points lie approximately on the center diagonal.
+
+
+
+
+
+<P style="page-break-before: always">
+\newpage   
+
+#Fisher's test  
+To determine whether either presence or absence produces greater variability in the winpercent.  
+I'll check the p.value for the variance and we'll use it to set t.test or Welch's t-test, which adjusts the number of degrees of freedom when the variances are thought not to be equal to each other.  
+
+
+**Method: two sided F test to compare two variances**   
+
+If the p.value in F-test is greater than the significance level 0.05 means that there is no significant difference b/n Presence and Absence of an attribute, we reject the Null Hypothesis
+The higher the deviation of the estimate from 1, the stronger the evidence for unequal variances. 1 is in our confidence interval = variances are equal.
+
+# T.test  
+
+
+The table shows us for two sided t.test (whether the mean difference is equal to 0) and we see if the p-value is less than 0.05 and we reject the Null Hypothesis. This means that we should include these variable in the model as they have a significant relationship with the winpercent.
+We would interpret the second t.test (whether the mean difference is greather than 0 ) the Presence of an attribute in a candy increases winpercent.  
+
+<P style="page-break-before: always">
+\newpage   
+
+# Multiple regression finetuning  
+
+Based on the F and T test I removed nougat, hard, pluribus, fruity, bar. I also experimented with sugerpercent and pricepercent by making them binary variables. 
+
+
+How to interpret the model  
+the presence of an X attribute increases winpercent by its beta
+Highly significant attributes are the chocolate and peanutyalmondy
+
+The Residuals are symmetrically distributed across 2. That means that the model predicts certain points that fall far away from the actually observed points. Plotting the residuals might be the next step.
+
+Residual Standard Error is a measure of the quality of a linear regression fit. The RSE is the average amount that the winpercent will deviate from the true regression line. In this case on average, it could deviate from the regression line by approximately 11%. The percentage error, in this case, is 33% = any prediction could be off by 33%.
+
+Multiple R-squared, Adjusted R-squared - how well the model is fitting the actual data - the higher the better. We started at 0.47 and ended up at 0.556. = This model fits better the data.
+hight a regression that does not explain the variance in the response variable well
+55,6% of the variance in winpercent can be explained by the predictor variables.  
+
+
+******
+
+# Empfehlung für die Eigenschaften einer neuen Süßigkeit   
+\center chocolate, peanutyalmondy, crispedricewafer, caramel, sugar  \center   
+
+strictly speaking: having these attributes in a candy would result in a high Win rank.  
