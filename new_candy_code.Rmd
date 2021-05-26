@@ -79,6 +79,23 @@ winpercent	The overall win percentage according to 269,000 matchups.
 
 Wir werden uns die Daten ansehen, mit denen wir arbeiten.     
 
+```{r}
+library(readr)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+candy <- read_csv("candy.csv")
+candy[,2:10] <- candy[,2:10] %>% mutate_all(as.logical) 
+str(candy) 
+
+candy %>%
+  select(competitorname, winpercent) %>% 
+  arrange(desc(winpercent)) %>% 
+  select(competitorname) 
+
+
+```  
 
 
 <P style="page-break-before: always">
@@ -86,6 +103,22 @@ Wir werden uns die Daten ansehen, mit denen wir arbeiten.
 
 
 # EDE Histograms  
+
+```{r}
+candy_gat = candy %>% tidyr::gather(key = "key", value = "value", chocolate:pluribus)
+candy_gat %>%
+  ggplot(aes(winpercent, fill = value)) + 
+  geom_histogram(bins = 11) +
+  labs(y = "Count", 
+       x = "Win %tile", 
+       title = "Distribution of Win Percentile accross candy's attributes",
+       subtitle = "mapped on overall distribution of Win Percentile") +
+  facet_wrap(key~.) +
+  # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal()+
+  theme(legend.position="bottom")
+
+```  
 
 Hier sehen wir die Verteilung jeder Variablen, die über der Verteilung von **winpercent** abgebildet wird
 Auf den ersten Blick scheint das **winpercent** normal verteilt zu sein, aber ich werde später einen zusätzlichen Test durchführen, um diesen Verdacht zu unterstützen. Die Wahl des Binning kann irreführend sein. Wir sehen auch, dass **chocolate**, **bar**, **crispedricewafer**, **peanutyalmondy** einen hohen **winpercent** Score haben. **caramel** ist interessant, da es sowohl einen hohen als auch einen niedrigen **winpercent** zu haben scheint.  
@@ -96,11 +129,42 @@ At first glance, it seems that the **winpercent** is normally distributed but I'
 We see also that **chocolate**, **bar** ,  **crispedricewafer**, **peanutyalmondy** have a high **winpercent** score. **caramel** is interesting as it appears to have both high and low **winpercent**.  
 **fruity** ,**pluribus** , **hard** are obviously on the lower end of the winpercent distribution.  
 
+```{r}
+candy_gat %>%
+  ggplot(aes(sugarpercent*100, fill = value)) + 
+  geom_histogram(bins = 11) +
+  labs(y = "Count", 
+       x = "Sugar %tile", 
+       title = "Distribution of Sugar Percentile accross candy's attributes",
+       subtitle = "mapped on overall distribution of Sugar Percentile") +
+  facet_wrap(key~.) +
+  # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal()+
+  theme(legend.position="bottom")
+
+```   
+
 Süßigkeiten mit diesen Zutaten neigen dazu, in der Süße zu variieren. Mit Ausnahme von **nougat** konzentriert es sich auf das 60. Perzentil.  
 
 Candies with these ingredients tend to vary in sweetness. except for **nougat**, it is focused on the 60th percentile.   
 
 
+
+
+```{r}
+candy_gat%>%
+  ggplot(aes(pricepercent*100, fill = value)) + 
+  geom_histogram(bins = 7) +
+  labs(y = "Count", 
+       x = "Price %tile", 
+       title = "Distribution of Price Percentile accross candy's attributes",
+       subtitle = "mapped on overall distribution of Price Percentile") +
+  facet_wrap(key~.) +
+  # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal()+
+  theme(legend.position="bottom")
+
+```  
 
 **bar**, **caramel**, **chocolate**, **crispedricewafer**, **peanutyalmondy**  besetzen tendenziell die höheren Preisklassen, wobei **fruity** und **hard** die niedrigeren.  
 
@@ -115,18 +179,57 @@ Hier vergleiche ich visuell das Vorhandensein und Fehlen eines Attributs in eine
 Here I visually compare the presence and absence of an attribute in a candy.  
 
 
+```{r}
+candy_gat %>%
+ ggplot(aes(key,winpercent, fill = value)) + 
+  geom_boxplot(fatten = .8)+
+  labs(y = "Win %tile",
+       x = "Attributes",
+       title = "Win Percentile accross candy's attributes") +
+  # facet_wrap(key~.) 
+  # # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal()+
+  theme(legend.position="bottom")
+```  
+
 Was wir hier feststellen können, ist, dass das Vorhandensein von fruchtig und hart einen geringeren Winteranteil aufweist als das Fehlen von Süßigkeiten. Die längeren Schwänze deuten auch auf eine hohe Variabilität hin. Ich werde die Outliers extrahieren, damit ich sie mir ansehen kann. Warum unterscheiden sie sich von den anderen?  
 
 What we can notice here is that the presence of fruity and hard have lower winpercent compared to the absence of them in candy. The longer tails also suggest high variability. I'll extract the outliers so I can take a look at them and look for an answer Why do they differ from the rest?
 
 
- 
+```{r}
+candy_gat %>%
+  ggplot(aes(key,pricepercent*100, fill = value)) + 
+  geom_boxplot(fatten = .8)+
+  labs(y = "Price %tile",
+       x = "Attributes",
+       title = "Price Percentile accross candy's attributes") +
+  # facet_wrap(key~.) 
+  # # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal()+
+  theme(legend.position="bottom")
+```  
 
 Ich werde die Outliers extrahieren, damit ich sie mir ansehen kann. Warum unterscheiden sie sich von den anderen?  
 Was wir hier bemerken ist, dass der picepercent springt, wenn es bar oder caramel oder chocolate oder crispedricewafer oder peanutyalmondy gibt.  
 
 What we notice here is that the picepercent jumps when there is bar or caramel or chocolate or crispedricewafer or peanutyalmondy. I'll extract the outliers so I can take a look at them and look for an answer Why do they differ from the rest?  
 
+
+
+```{r}
+candy_gat %>%
+  ggplot(aes(key,sugarpercent*100, fill = value)) + 
+  geom_boxplot(fatten = .8)+
+  labs(y = "Sugar %tile",
+       x = "Attributes",
+       title = "Sugar Percentile accross candy's attributes") +
+  # facet_wrap(key~.) 
+  # # scale_fill_manual(values = c("grey", "#feb24c"))+
+  theme_minimal() +
+  theme(legend.position="bottom")
+
+```  
 
 Insgesamt ist der durchschnittliche Zuckeranteil für ein vorhandenes oder fehlendes Attribut in Süßigkeiten gleich. Aber natürlich kann ein `t.test()` helfen, meinen Verdacht zu stützen. Was auffällt, ist **nougat**, **peanutyalmondy**  **caramel**. Ihre Anwesenheit in Süßigkeiten bringt die Süßigkeiten auf einen höheren Rang. Ich werde noch einmal einen Blick auf die Outliers werfen.  
 
@@ -138,6 +241,16 @@ Overall the average sugarpercent for a present or absent attribute in candy is t
 # Barplot  
 
 Overall data barplot
+```{r fig.align="center"}
+as.data.frame(table(candy_gat$key,candy_gat$value)) %>% 
+  ggplot(aes(Var1, Freq, fill = Var2)) + 
+  geom_bar(stat="identity")+
+   labs(y = "Count",
+       x = "Attributes",
+       title = "Presence of attributes in data") +
+  theme_minimal()+
+  theme(legend.position="bottom")
+```  
 
 Hier sehen wir, dass das Vorhandensein bis Fehlen eines Attributs in einer Süßigkeit im Datensatz. Insgesamt gibt es nicht viele Süßigkeiten mit **crispedricewafer** und **nougat**.  
 
@@ -147,6 +260,19 @@ Here we see that the presence to absence of an attribute in a candy in the datas
 \newpage   
 
 # Correlation Exploration  
+
+```{r}
+library(GGally)
+cfun <- function(data, mapping, method="lm", ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point() + 
+    geom_smooth(method=method, ...)+
+    theme_minimal()
+  p
+}
+
+ggpairs(candy_gat, columns = 2:4, ggplot2::aes(colour=value),lower = list(continuous = cfun)) 
+```  
 
 Hier sehen wir, dass die Korrelationen b / n der numerischen Variablen als signifikant markiert sind:  
 zwischen ± 0,30 und ± 0,49 = medium correlation 
@@ -160,6 +286,21 @@ If I introduce the variables into the model I may obtain misleading results. I w
 
 <P style="page-break-before: always">
 \newpage   
+
+```{r out.width="100%"}
+library(ggcorrplot)
+
+candy[,2:10] <- candy[,2:10] %>% mutate_all(as.double)
+corrr = as.data.frame(cor(candy[2:13]))
+p_mat = cor_pmat(candy[,2:13] )
+ggcorrplot(corrr, hc.order = TRUE,  lab = TRUE,outline.col = "white", type = "lower", 
+           ggtheme = ggplot2::theme_minimal,p.mat = p_mat, insig = "blank", title = "Correlation matrix of candy's attributes",
+           colors = c("#619CFF",  "white","#F8766D")) +
+  # theme(axis.text.x = element_text(size = 7),
+  #       axis.text.y = element_text(size = 7)) +
+  theme(legend.position="bottom")
+
+```  
 
 In dieser Korrelationsmatrix werden nur signifikante Korrelationen angezeigt.
 zwischen ± 0,50 und ± 1 = starke Korrelation
@@ -181,7 +322,9 @@ We also see a strong correlation b/n **chocolate** and **winpercent**. That may 
 ......  
 If I introduce the variables into the model I may introduce multicollinearity and obtain misleading results.
 Let's see the candies with **fruity** and **chocolate**.  
-
+```{r}
+candy %>% filter(fruity == TRUE & chocolate == TRUE ) %>% arrange(desc(sugarpercent)) %>%   kable() %>% kable_styling(font_size = 4)
+```
 There is only one candy having both **chocolate** and **fruity** and it has win%tile 49. 
 
 
@@ -191,16 +334,32 @@ There is only one candy having both **chocolate** and **fruity** and it has win%
 # First Multiple regression  
 All attributes as predictors  
 
+```{r}
+candy <- read_csv("candy.csv")
+candy[,2:10] <- candy[,2:10] %>% mutate_all(as.logical)
+candy_mod = lm(winpercent ~ ., data = candy[,-1]) 
+summary(candy_mod)
 
+```  
 
 From the output of the row model, we may falsely suggest that **chocolate** and **fruity** increase **winpercent**. There is a correlation b/n those two variables and only one observation having both **chocolate** and **fruity**. I will remove this one particular observation from the model.
 
+```{r}
 
+# find the indx to remove from model
+# candy <- read_csv("candy.csv")
+candy[,2:10] <- candy[,2:10] %>% mutate_all(as.logical)
+indx = which(candy$competitorname == "Tootsie Pop")
+candy_mod = lm(winpercent ~ ., data = candy[-indx,-1]) 
+summary(candy_mod)
+```
 
 
 # Test for normality  
 
-
+```{r}
+qqnorm(candy$sugarpercent)
+```
 It appears that our data is normally distributed, since the points lie approximately on the center diagonal.
 
 
@@ -211,18 +370,199 @@ It appears that our data is normally distributed, since the points lie approxima
 \newpage   
 
 #Fisher's test  
+
 To determine whether either presence or absence produces greater variability in the winpercent.  
 I'll check the p.value for the variance and we'll use it to set t.test or Welch's t-test, which adjusts the number of degrees of freedom when the variances are thought not to be equal to each other.  
 
 
 **Method: two sided F test to compare two variances**   
 
+```{r}
+candy = read_csv("candy.csv")
+candy[,2:10]=candy[,2:10] %>% mutate_all(as.logical)
+# candy[,2:10]=candy[,2:10] %>% mutate_all(as.character)
+winpercent = candy$winpercent
+
+
+
+ftest = purrr::map_df(list(var.test(winpercent~candy$chocolate), 
+                           var.test(winpercent~candy$fruity), 
+                           var.test(winpercent~candy$caramel),
+                           var.test(winpercent~candy$peanutyalmondy),
+                           var.test(winpercent~candy$nougat),
+                           var.test(winpercent~candy$crispedricewafer),
+                           var.test(winpercent~candy$hard),
+                           var.test(winpercent~candy$bar),
+                           var.test(winpercent~candy$pluribus)), broom::tidy)
+
+
+
+testedAttribute = c(var.test(winpercent~candy$chocolate)$data.name,
+                    var.test(winpercent~candy$fruity)$data.name,
+                    var.test(winpercent~candy$caramel)$data.name,
+                    var.test(winpercent~candy$peanutyalmondy)$data.name,
+                    var.test(winpercent~candy$nougat)$data.name,
+                    var.test(winpercent~candy$crispedricewafer)$data.name,
+                    var.test(winpercent~candy$hard)$data.name,
+                    var.test(winpercent~candy$bar)$data.name,
+                    var.test(winpercent~candy$pluribus)$data.name
+)
+
+
+ftest = round(ftest[,-c(4,8,9)] ,3)
+ftest$testedAttribute = testedAttribute
+
+# ttestDF$p.valueUnScientific = round(as.double(format(ttestDF$p.value,scientific = F)),3)
+ftest %>% kable() #%>% kable_styling(font_size = 6)
+# the variance is not different if p.value is > 0.05
+```
+
 If the p.value in F-test is greater than the significance level 0.05 means that there is no significant difference b/n Presence and Absence of an attribute, we reject the Null Hypothesis
 The higher the deviation of the estimate from 1, the stronger the evidence for unequal variances. 1 is in our confidence interval = variances are equal.
 
 # T.test  
 
+```{r}
 
+candy = read_csv("candy.csv")
+candy[,2:10]=candy[,2:10] %>% mutate_all(as.logical)
+# candy[,2:10]=candy[,2:10] %>% mutate_all(as.character)
+winpercent = candy$winpercent
+chocolate= candy$chocolate
+
+# To decide if the link winpercent and chocolate presence is significant we would perform
+chocolateTest = t.test(winpercent~chocolate,var.equal = (ifelse(any(ftest$p.value<0.05 & ftest$testedAttribute == "winpercent by chocolate"), FALSE, TRUE))) # there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+chocolateTestLess = t.test(winpercent~chocolate, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by chocolate"), FALSE, TRUE))) # the absance of chocolate in candy results in less winpercent
+
+
+
+
+winpercent = candy$winpercent
+fruity= candy$fruity
+# To decide if the link winpercent and chocolate presence is significant we would perform
+fruityTest = t.test(winpercent~fruity,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by fruity"), FALSE, TRUE)))# there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+fruityTestLess = t.test(winpercent~fruity, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by fruity"), FALSE, TRUE)))# the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+caramel= candy$caramel
+# To decide if the link winpercent and chocolate presence is significant we would perform
+caramelTest = t.test(winpercent~caramel,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by caramel"), FALSE, TRUE)))# there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+caramelTestLess = t.test(winpercent~caramel, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by caramel"), FALSE, TRUE))) # the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+peanutyalmondy= candy$peanutyalmondy
+# To decide if the link winpercent and chocolate presence is significant we would perform
+peanutyalmondyTest = t.test(winpercent~peanutyalmondy,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by peanutyalmondy"), FALSE, TRUE)))# there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+peanutyalmondyTestLess = t.test(winpercent~peanutyalmondy, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by peanutyalmondy"), FALSE, TRUE)))# the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+
+nougat= candy$nougat
+# To decide if the link winpercent and chocolate presence is significant we would perform
+nougatTest = t.test(winpercent~nougat,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by nougat"), FALSE, TRUE))) # there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+nougatTestLess = t.test(winpercent~nougat, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by nougat"), FALSE, TRUE)))# the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+
+crispedricewafer= candy$crispedricewafer
+# To decide if the link winpercent and chocolate presence is significant we would perform
+crispedricewaferTest = t.test(winpercent~crispedricewafer,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by crispedricewafer"), FALSE, TRUE))) # there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+crispedricewaferTestLess = t.test(winpercent~crispedricewafer, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by crispedricewafer"), FALSE, TRUE))) # the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+
+
+hard= candy$hard
+# To decide if the link winpercent and chocolate presence is significant we would perform
+hardTest = t.test(winpercent~hard,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by hard"), FALSE, TRUE)))# there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+hardTestLess = t.test(winpercent~hard, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by hard"), FALSE, TRUE))) # the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+bar= candy$bar
+# To decide if the link winpercent and chocolate presence is significant we would perform
+barTest = t.test(winpercent~bar,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by bar"), FALSE, TRUE))) # there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+barTestLess = t.test(winpercent~bar, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by bar"),  FALSE, TRUE)))# the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+
+
+
+pluribus= candy$pluribus
+# To decide if the link winpercent and chocolate presence is significant we would perform
+pluribusTest = t.test(winpercent~pluribus,var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by pluribus"),  FALSE, TRUE)))# there is a differance b/n the chocolate group and the non-chocolate group 
+# The two means of the winprice for candies with and without chocolate are significantly different.
+
+pluribusTestLess = t.test(winpercent~pluribus, alternative="greater",var.equal = (ifelse(any(ftest$p.value < 0.05 & ftest$testedAttribute == "winpercent by pluribus"), FALSE, TRUE))) # the absance of chocolate in candy results in less winpercent
+
+
+
+
+
+testedAttribute = c(chocolateTest$data.name,chocolateTestLess$data.name,
+                     fruityTest$data.name,fruityTestLess$data.name,
+                     nougatTest$data.name,nougatTestLess$data.name,
+                     hardTest$data.name,hardTestLess$data.name,
+                     barTest$data.name,barTestLess$data.name,
+                     pluribusTest$data.name,pluribusTestLess$data.name,
+                     crispedricewaferTest$data.name,crispedricewaferTestLess$data.name,
+                     peanutyalmondyTest$data.name,peanutyalmondyTestLess$data.name,
+                     caramelTest$data.name,caramelTestLess$data.name
+                     )
+
+ttestDF <- purrr::map_df(list(chocolateTest,  chocolateTestLess,
+                              fruityTest,fruityTestLess,
+                              nougatTest,nougatTestLess,
+                              hardTest,hardTestLess,
+                              barTest,barTestLess,
+                              pluribusTest,pluribusTestLess,
+                              crispedricewaferTest,crispedricewaferTestLess,
+                              peanutyalmondyTest,peanutyalmondyTestLess,
+                              caramelTest,caramelTestLess
+                              ), broom::tidy)
+ttestDF$testedAttribute= testedAttribute
+# colnames(ttestDF)[1] = "avgFalse"
+# colnames(ttestDF)[2] = "avgTrue"
+ttestDF = round(ttestDF[,c(1:7)],3) %>% cbind(.,ttestDF[,c(8,9,11)])
+ttestDF %>% kable() %>% kable_styling(font_size = 6)
+
+```
 The table shows us for two sided t.test (whether the mean difference is equal to 0) and we see if the p-value is less than 0.05 and we reject the Null Hypothesis. This means that we should include these variable in the model as they have a significant relationship with the winpercent.
 We would interpret the second t.test (whether the mean difference is greather than 0 ) the Presence of an attribute in a candy increases winpercent.  
 
@@ -233,7 +573,30 @@ We would interpret the second t.test (whether the mean difference is greather th
 
 Based on the F and T test I removed nougat, hard, pluribus, fruity, bar. I also experimented with sugerpercent and pricepercent by making them binary variables. 
 
+```{r}
 
+candy <- read_csv("candy.csv")
+candy[,2:10] <- candy[,2:10] %>% mutate_all(as.logical)
+candy_mod = lm(winpercent ~ ., data = candy[,-1]) 
+
+
+candy = candy %>% filter(fruity == FALSE) %>%  select( -nougat,-hard, -pluribus,-fruity, -bar) %>%       
+                    mutate(sugar = ifelse(sugarpercent > 0.5, TRUE, FALSE),
+                           price = ifelse(pricepercent > 0.5, TRUE, FALSE)) %>% 
+                    select(-sugarpercent,-pricepercent, -price)
+candy_mod = lm(winpercent ~ ., data = candy[,-c(1)]) 
+summary(candy_mod)
+mod = as.data.frame(candy_mod$coefficients)
+mod$`Attribute in candy` = rownames(mod)
+mod$Coefficient = mod$`candy_mod$coefficients`
+rownames(mod)=NULL
+mod[,1] = NULL
+
+mod %>% arrange(desc(Coefficient)) %>% kable()
+
+
+
+```
 How to interpret the model  
 the presence of an X attribute increases winpercent by its beta
 Highly significant attributes are the chocolate and peanutyalmondy
